@@ -1,0 +1,7 @@
+# Leonida Forge Robots.txt
+# Public utility pages are fully crawlable for search engine indexing
+
+User-agent: *
+Allow: /
+
+Sitemap: https://leonidaforge.com/sitemap.xml

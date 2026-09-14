@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e1118" />
+      <stop offset="50%" stop-color="#090a0f" />
+      <stop offset="100%" stop-color="#050608" />
+    </linearGradient>
+    <radialGradient id="glow" cx="80%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="#c8f135" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#090a0f" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1200" height="630" fill="url(#bg-grad)" />
+  <rect width="1200" height="630" fill="url(#glow)" />
+
+  <!-- Subtle Grid lines -->
+  <g stroke="#1d2433" stroke-width="1" opacity="0.4">
+    <line x1="80" y1="0" x2="80" y2="630" />
+    <line x1="240" y1="0" x2="240" y2="630" />
+    <line x1="400" y1="0" x2="400" y2="630" />
+    <line x1="560" y1="0" x2="560" y2="630" />
+    <line x1="720" y1="0" x2="720" y2="630" />
+    <line x1="880" y1="0" x2="880" y2="630" />
+    <line x1="1040" y1="0" x2="1040" y2="630" />
+    <line x1="0" y1="120" x2="1200" y2="120" />
+    <line x1="0" y1="280" x2="1200" y2="280" />
+    <line x1="0" y1="440" x2="1200" y2="440" />
+  </g>
+
+  <!-- Badge -->
+  <g transform="translate(100, 110)">
+    <rect width="280" height="40" rx="20" fill="#151b26" stroke="#2a354a" stroke-width="1.5" />
+    <circle cx="22" cy="20" r="5" fill="#c8f135" />
+    <text x="36" y="25" fill="#c8f135" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="1.5">INDEPENDENT GTA VI TOOLS</text>
+  </g>
+
+  <!-- Brand Title -->
+  <text x="100" y="240" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="76" font-weight="800" letter-spacing="-1">
+    LEONIDA FORGE
+  </text>
+
+  <!-- Tagline / Subtitle -->
+  <text x="100" y="315" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="30" font-weight="400">
+    GTA VI Tools, Vehicle Database, Money Planners &amp; Trackers
+  </text>
+
+  <!-- Feature Pills -->
+  <g transform="translate(100, 400)">
+    <!-- Pill 1 -->
+    <rect x="0" y="0" width="220" height="60" rx="14" fill="#121622" stroke="#222c3d" stroke-width="1" />
+    <text x="24" y="36" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="17" font-weight="600">🚗 Vehicle Database</text>
+
+    <!-- Pill 2 -->
+    <rect x="240" y="0" width="220" height="60" rx="14" fill="#121622" stroke="#222c3d" stroke-width="1" />
+    <text x="264" y="36" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="17" font-weight="600">⚖️ 3-Way Comparison</text>
+
+    <!-- Pill 3 -->
+    <rect x="480" y="0" width="220" height="60" rx="14" fill="#121622" stroke="#222c3d" stroke-width="1" />
+    <text x="504" y="36" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="17" font-weight="600">💰 Money Planner</text>
+
+    <!-- Pill 4 -->
+    <rect x="720" y="0" width="220" height="60" rx="14" fill="#121622" stroke="#222c3d" stroke-width="1" />
+    <text x="744" y="36" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="17" font-weight="600">📋 100% Tracker</text>
+  </g>
+
+  <!-- Footer Info -->
+  <text x="100" y="540" fill="#64748b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16">
+    Built for players. Stop searching. Start playing. • 100% Client-Side • Zero Logins
+  </text>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "name": "Leonida Forge",
+  "description": "Independent fan-made GTA VI forge featuring vehicle comparisons, money calculators, 100% progress trackers, mission directories, and search-intent guides.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
