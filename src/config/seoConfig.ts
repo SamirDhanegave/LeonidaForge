@@ -7,7 +7,7 @@
 
 export const SITE_NAME = 'Leonida Forge';
 export const SITE_TAGLINE = 'GTA VI Tools, Trackers & Calculators';
-export const DEFAULT_FALLBACK_DOMAIN = 'https://leonidaforge.com';
+export const DEFAULT_FALLBACK_DOMAIN = 'https://leonidaforge.vercel.app';
 
 /**
  * Resolves the configured production site URL from VITE_SITE_URL.

@@ -4,4 +4,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://leonidaforge.com/sitemap.xml
+Sitemap: https://leonidaforge.vercel.app/sitemap.xml

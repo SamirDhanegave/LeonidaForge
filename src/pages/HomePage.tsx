@@ -34,6 +34,7 @@ export const HomePage: React.FC = () => {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: 'Leonida Forge',
+      alternateName: ['LeonidaForge', 'Leonida Forge GTA 6', 'Leonida Forge GTA VI'],
       url: siteUrl,
       description: 'Useful tools, comparisons, trackers and guides for exploring GTA VI.',
       potentialAction: {
@@ -106,13 +107,14 @@ export const HomePage: React.FC = () => {
       {/* Hero Section */}
       <section id="hero-section" className="pt-10 sm:pt-16 pb-6 text-center max-w-4xl mx-auto px-4">
         {/* Eyebrow */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#273145] bg-[#121622] text-xs font-semibold uppercase tracking-widest text-[#c8f135] mb-6">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-[#273145] bg-[#121622] text-xs font-semibold uppercase tracking-widest text-[#c8f135] mb-6">
           <Zap className="w-3.5 h-3.5 text-[#c8f135]" />
-          <span>GTA VI COMMUNITY UTILITY TOOLS</span>
+          <span>LEONIDA FORGE • GTA VI UTILITY TOOLS</span>
         </div>
 
         {/* Headline */}
         <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-[#f8fafc] mb-6 leading-tight sm:leading-tight">
+          <span className="block text-sm sm:text-base font-bold text-[#c8f135] tracking-widest uppercase mb-2">Leonida Forge</span>
           Stop searching.{' '}
           <span className="text-[#c8f135] underline decoration-[#c8f135]/40 underline-offset-8">
             Start playing.

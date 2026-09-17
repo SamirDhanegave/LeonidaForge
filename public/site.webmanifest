@@ -1,0 +1,16 @@
+{
+  "name": "Leonida Forge",
+  "short_name": "Leonida Forge",
+  "description": "Explore GTA VI tools, vehicle comparisons, progress tracking, money calculators and practical guides for players.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0c10",
+  "theme_color": "#0a0c10",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
