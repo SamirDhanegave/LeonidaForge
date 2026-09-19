@@ -123,7 +123,7 @@ export const HomePage: React.FC = () => {
 
         {/* Supporting Copy */}
         <p className="text-base sm:text-lg text-[#94a3b8] max-w-2xl mx-auto leading-relaxed mb-8">
-          Useful tools, comparisons, trackers and guides for exploring GTA VI.
+          Useful tools, comparisons, trackers and guides for exploring Grand Theft Auto VI.
           Built for players to quickly answer what it is, where it is, how much it costs, and what to do next.
         </p>
 
