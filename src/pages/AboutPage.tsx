@@ -37,7 +37,7 @@ export const AboutPage: React.FC = () => {
           About Leonida Forge
         </h1>
         <p className="text-sm sm:text-base text-[#94a3b8] leading-relaxed">
-          Useful tools, comparisons, and calculators for exploring GTA VI.
+          Useful tools, comparisons, and calculators for exploring Grand Theft Auto VI.
           Designed from first principles to answer player questions instantly without wiki noise or clickbait filler.
         </p>
       </section>
