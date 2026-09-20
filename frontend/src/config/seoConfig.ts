@@ -6,7 +6,7 @@
  */
 
 export const SITE_NAME = 'Leonida Forge';
-export const SITE_TAGLINE = 'GTA VI Tools, Trackers & Calculators';
+export const SITE_TAGLINE = 'GTA VI News, Guides & Tools';
 export const DEFAULT_FALLBACK_DOMAIN = 'https://leonidaforge.vercel.app';
 
 /**

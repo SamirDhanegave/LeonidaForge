@@ -63,12 +63,15 @@ export function RouterProvider({ children }: { children: ReactNode }) {
     window.scrollTo(0, 0);
   }, []);
 
-  // Parse path parameters (e.g. /vehicles/:slug or /guides/:slug)
+  // Parse path parameters (e.g. /vehicles/:slug, /guides/:slug, /news/:id)
   const params: Record<string, string> = {};
   const segments = currentPath.split('?')[0].split('#')[0].split('/').filter(Boolean);
   if (segments.length >= 2) {
     if (segments[0] === 'vehicles' || segments[0] === 'guides') {
       params.slug = segments[1];
+    }
+    if (segments[0] === 'news') {
+      params.id = segments[1];
     }
   }
 

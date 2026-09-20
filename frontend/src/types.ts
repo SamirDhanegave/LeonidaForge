@@ -165,3 +165,49 @@ export interface FeedbackSubmission {
   useful: boolean;
   timestamp: number;
 }
+
+// -------------------------------------------------------
+// Backend API types — mirror Supabase table schemas
+// -------------------------------------------------------
+
+export interface News {
+  id: number;
+  source: string;                // e.g. "rockstar_newswire"
+  title: string | null;
+  url: string;
+  raw_content: string | null;
+  published_at: string | null;   // ISO 8601
+  image_url: string | null;
+  collected_at: string;          // ISO 8601
+  classifier: string | null;
+}
+
+export interface SocialPost {
+  id: number;
+  agent: string | null;
+  classifier: string | null;
+  username: string;
+  post_id: string;
+  raw_script: string;            // post text
+  url: string | null;            // full x.com URL
+  date: string | null;           // ISO 8601
+}
+
+export interface Script {
+  id: number;
+  news_id: number;
+  youtube_script: string | null;
+  instagram_script: string | null;
+  status: string | null;
+  created_at: string;            // ISO 8601
+  // populated when fetched with join
+  news?: Pick<News, 'id' | 'title' | 'url' | 'source'>;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  page: number;
+  limit: number;
+}
+
+export type NewsSource = 'rockstar_newswire' | 'x_social' | 'leonida_forge';
