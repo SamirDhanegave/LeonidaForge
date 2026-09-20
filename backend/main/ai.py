@@ -1,23 +1,4 @@
-"""
-AI pipeline.
 
-Stages, in order:
-
-  1. monitored_posts : row has `raw_script` but no `classifier`
-                       -> write a human-style piece about the X post
-                       -> save into `classifier`
-
-  2. news            : row has `raw_content` but no `classifier`
-                       -> write a human-style piece using raw_content as reference
-                       -> save into `classifier`
-
-  3. news vs scripts : news.id that has no matching scripts.news_id
-                       -> generate youtube_script + instagram_script
-                       -> insert a new row into scripts
-
-Every stage is idempotent: re-running only touches rows that are still missing
-something, unless force=True is passed.
-"""
 
 from lib.llm import ask_openrouter
 from lib.supabase_client import supabase
