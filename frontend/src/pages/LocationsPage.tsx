@@ -191,12 +191,7 @@ export const LocationsPage: React.FC = () => {
       </div>
 
       {/* Demand Discovery Feedback on Locations */}
-      <section className="pt-6">
-        <FeedbackModule
-          pageSlug="locations-directory"
-          contextTitle="Leonida Location Explorer & District POIs"
-        />
-      </section>
+    
     </div>
   );
 };

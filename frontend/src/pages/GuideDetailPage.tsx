@@ -225,13 +225,7 @@ export const GuideDetailPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Feedback Module */}
-      <section className="pt-4">
-        <FeedbackModule
-          pageSlug={`guide-${guide.slug}`}
-          contextTitle={`Guide: ${guide.title}`}
-        />
-      </section>
+  
     </article>
   );
 };

@@ -355,12 +355,7 @@ export const ComparePage: React.FC = () => {
       )}
 
       {/* Demand Discovery Feedback on Compare */}
-      <section className="pt-6">
-        <FeedbackModule
-          pageSlug="compare-tool"
-          contextTitle="3-Way Vehicle Comparison Telemetry"
-        />
-      </section>
+
     </div>
   );
 };

@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 import atexit
+import hmac
 import os
 import subprocess
 import sys
@@ -10,20 +11,15 @@ from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
 
-from dotenv import load_dotenv
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 
-# ============================================================
-# ENVIRONMENT
-# ============================================================
-
-load_dotenv()
-
-
-# ============================================================
-# FLASK
-# ============================================================
-
+# Flask
 app = Flask(__name__)
 
 CORS(
@@ -32,15 +28,21 @@ CORS(
 )
 
 
-# ============================================================
-# PATHS / CONFIG
-# ============================================================
-
+# Configuration
 BASE_DIR = Path(__file__).resolve().parent
 PORT = int(os.environ.get("PORT", 5000))
 
-# Persistent collectors can be started/stopped from /admin.
-# General news is a one-shot job: run -> collect -> exit.
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+IS_SERVERLESS = bool(
+    os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
+)
+
+ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "").strip()
+
+STALE_JOB_SECONDS = 15 * 60
+
 SERVICES = {
     "watcher": {
         "name": "X Watcher",
@@ -66,10 +68,7 @@ STAGE_LABELS = {
 }
 
 
-# ============================================================
-# RUNTIME STATE
-# ============================================================
-
+# Runtime state
 service_processes = {}
 service_lock = threading.RLock()
 activity_log = deque(maxlen=150)
@@ -94,10 +93,7 @@ script_job = {
 }
 
 
-# ============================================================
-# HELPERS
-# ============================================================
-
+# Helpers
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
 
@@ -141,6 +137,7 @@ def service_status(service_id):
             "exit_code": None,
             "started_at": None,
             "finished_at": None,
+            "supported": not IS_SERVERLESS,
         }
 
     running = process.poll() is None
@@ -164,6 +161,7 @@ def service_status(service_id):
         "exit_code": exit_code,
         "started_at": getattr(process, "_lf_started_at", None),
         "finished_at": getattr(process, "_lf_finished_at", None),
+        "supported": not IS_SERVERLESS,
     }
 
 
@@ -315,13 +313,11 @@ def stop_all_services():
                 )
 
 
-atexit.register(stop_all_services)
+if not IS_SERVERLESS:
+    atexit.register(stop_all_services)
 
 
-# ============================================================
-# AI PIPELINE JOB
-# ============================================================
-
+# AI pipeline job state
 def get_script_job():
     with script_job_lock:
         job = dict(script_job)
@@ -436,9 +432,23 @@ def _run_pipeline_job(news_id=None, force=False):
         )
 
 
+def _job_is_stale():
+    """True if a 'running' job has been going far longer than any request can."""
+    started_at = script_job.get("started_at")
+    if not started_at:
+        return False
+    try:
+        started = datetime.fromisoformat(started_at)
+    except ValueError:
+        return False
+    return (datetime.now(timezone.utc) - started).total_seconds() > STALE_JOB_SECONDS
+
+
 def start_script_job(news_id=None, force=False):
     with script_job_lock:
-        if script_job["status"] in ("starting", "running"):
+        if script_job["status"] in ("starting", "running") and not (
+            IS_SERVERLESS and _job_is_stale()
+        ):
             return {
                 "started": False,
                 "already_running": True,
@@ -463,18 +473,21 @@ def start_script_job(news_id=None, force=False):
             "force": force,
         })
 
-    thread = threading.Thread(
-        target=_run_pipeline_job,
-        args=(news_id, force),
-        name="ai-pipeline-job",
-        daemon=True,
-    )
-    thread.start()
-
     log_activity(
         "▶ AI pipeline requested"
         + (f" for News #{news_id}." if news_id else " for pending rows.")
     )
+
+    if IS_SERVERLESS:
+        _run_pipeline_job(news_id, force)
+    else:
+        thread = threading.Thread(
+            target=_run_pipeline_job,
+            args=(news_id, force),
+            name="ai-pipeline-job",
+            daemon=True,
+        )
+        thread.start()
 
     return {
         "started": True,
@@ -483,23 +496,60 @@ def start_script_job(news_id=None, force=False):
     }
 
 
-# ============================================================
-# HEALTH
-# ============================================================
+# Admin authentication
+@app.before_request
+def require_admin_token():
+    if not ADMIN_TOKEN:
+        return None
 
+    if request.method == "OPTIONS" or not request.path.startswith("/api/admin"):
+        return None
+
+    header = request.headers.get("Authorization", "")
+    supplied = header[7:] if header.lower().startswith("bearer ") else ""
+    supplied = supplied or request.headers.get("X-Admin-Token", "")
+
+    if not hmac.compare_digest(supplied.encode(), ADMIN_TOKEN.encode()):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    return None
+
+
+def serverless_unsupported(action):
+    return jsonify({
+        "error": (
+            f"Cannot {action} on Vercel: serverless functions cannot keep "
+            "background processes running. Run the workers on an always-on host "
+            "(Railway, Render, Fly.io, a VPS) or locally."
+        ),
+        "supported": False,
+    }), 501
+
+
+# Public API
 @app.route("/api/health")
 def health():
     refresh_finished_processes()
-    return jsonify({
+
+    payload = {
         "status": "ok",
         "service": "leonida-forge-api",
         "timestamp": now_iso(),
-    })
+        "runtime": "serverless" if IS_SERVERLESS else "server",
+        "workers_supported": not IS_SERVERLESS,
+    }
 
+    if request.args.get("deep") == "1":
+        try:
+            get_supabase().table("news").select("id").limit(1).execute()
+            payload["database"] = "ok"
+        except Exception as error:
+            payload["status"] = "degraded"
+            payload["database"] = f"{type(error).__name__}: {error}"
+            return jsonify(payload), 503
 
-# ============================================================
-# PUBLIC NEWS
-# ============================================================
+    return jsonify(payload)
+
 
 @app.route("/api/news")
 def get_news():
@@ -556,10 +606,6 @@ def get_news_item(news_id):
         return jsonify({"error": str(error)}), 500
 
 
-# ============================================================
-# PUBLIC SOCIAL / X
-# ============================================================
-
 @app.route("/api/social")
 def get_social():
     try:
@@ -567,14 +613,17 @@ def get_social():
         limit = min(50, max(1, int(request.args.get("limit", 20))))
         offset = (page - 1) * limit
 
-        sb = get_supabase()
         response = (
-    sb.table("monitored_posts")
-    .select("id,agent,classifier,username,post_id,date,created_at,url")
-    .order("date", desc=True)
-    .range(offset, offset + limit - 1)
-    .execute()
-)
+            get_supabase()
+            .table("monitored_posts")
+            .select(
+                "id, agent, classifier, username, post_id, date, created_at"
+            )
+            .order("date", desc=True)
+            .range(offset, offset + limit - 1)
+            .execute()
+        )
+
         return jsonify({
             "data": response.data or [],
             "page": page,
@@ -585,11 +634,6 @@ def get_social():
         return jsonify({"error": "page and limit must be numbers"}), 400
     except Exception as error:
         return jsonify({"error": str(error)}), 500
-
-
-# ============================================================
-# PUBLIC SCRIPTS
-# ============================================================
 
 @app.route("/api/scripts")
 def get_scripts():
@@ -627,10 +671,7 @@ def get_script(script_id):
         return jsonify({"error": str(error)}), 500
 
 
-# ============================================================
-# ADMIN — SERVICES
-# ============================================================
-
+# Admin API
 @app.route("/api/admin/services")
 def admin_services():
     refresh_finished_processes()
@@ -641,6 +682,9 @@ def admin_services():
 
 @app.route("/api/admin/services/<service_id>/start", methods=["POST"])
 def admin_start_service(service_id):
+    if IS_SERVERLESS:
+        return serverless_unsupported("start workers")
+
     try:
         result = start_service(service_id)
         return jsonify({
@@ -656,6 +700,9 @@ def admin_start_service(service_id):
 
 @app.route("/api/admin/services/<service_id>/stop", methods=["POST"])
 def admin_stop_service(service_id):
+    if IS_SERVERLESS:
+        return serverless_unsupported("stop workers")
+
     try:
         result = stop_service(service_id)
         return jsonify({
@@ -671,6 +718,9 @@ def admin_stop_service(service_id):
 
 @app.route("/api/admin/services/<service_id>/run", methods=["POST"])
 def admin_run_service(service_id):
+    if IS_SERVERLESS:
+        return serverless_unsupported("run workers")
+
     if service_id not in SERVICES:
         return jsonify({"error": f"Unknown service: {service_id}"}), 404
 
@@ -687,10 +737,6 @@ def admin_run_service(service_id):
     except Exception as error:
         return jsonify({"error": str(error)}), 500
 
-
-# ============================================================
-# ADMIN — AI PIPELINE
-# ============================================================
 
 @app.route("/api/admin/scripts/status")
 @app.route("/api/admin/pipeline/status")
@@ -736,10 +782,6 @@ def admin_pipeline_pending():
         return jsonify({"error": str(error)}), 500
 
 
-# ============================================================
-# ADMIN — NEWS SEARCH / EDIT / DELETE
-# ============================================================
-
 @app.route("/api/admin/news")
 def admin_news():
     try:
@@ -757,7 +799,6 @@ def admin_news():
         if source:
             query = query.eq("source", source)
 
-        # Fetch a bounded set for the admin panel, then attach script state.
         response = query.limit(500).execute()
         items = response.data or []
 
@@ -849,8 +890,6 @@ def admin_delete_news(news_id):
         if not article:
             return jsonify({"error": "News item not found"}), 404
 
-        # Delete scripts explicitly first, so this still works even if the
-        # database foreign key is not configured with ON DELETE CASCADE.
         sb.table("scripts").delete().eq("news_id", news_id).execute()
         sb.table("news").delete().eq("id", news_id).execute()
 
@@ -866,10 +905,6 @@ def admin_delete_news(news_id):
     except Exception as error:
         return jsonify({"error": str(error)}), 500
 
-
-# ============================================================
-# ADMIN — STATS / ACTIVITY / SYSTEM
-# ============================================================
 
 @app.route("/api/admin/stats")
 def admin_stats():
@@ -913,10 +948,7 @@ def admin_system():
     })
 
 
-# ============================================================
-# START FLASK
-# ============================================================
-
+# Local server
 if __name__ == "__main__":
     debug = os.environ.get("FLASK_DEBUG", "1") == "1"
 

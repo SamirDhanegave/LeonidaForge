@@ -1,7 +1,0 @@
-Flask
-flask-cors
-playwright
-beautifulsoup4
-requests
-supabase
-python-dotenv

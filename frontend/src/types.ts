@@ -184,13 +184,14 @@ export interface News {
 
 export interface SocialPost {
   id: number;
-  agent: string | null;
+  agent?: string | null;
   classifier: string | null;
   username: string;
   post_id: string;
-  raw_script: string;            // post text
-  url: string | null;            // full x.com URL
-  date: string | null;           // ISO 8601
+  raw_script: string;
+  date: string;
+  created_at: string;
+  url?: string | null;
 }
 
 export interface Script {

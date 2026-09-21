@@ -329,12 +329,7 @@ export const MoneyPage: React.FC = () => {
       </div>
 
       {/* Demand Discovery Feedback on Money Planner */}
-      <section className="pt-6">
-        <FeedbackModule
-          pageSlug="money-planner"
-          contextTitle="GTA VI Money & Affordability Planner"
-        />
-      </section>
+    
     </div>
   );
 };

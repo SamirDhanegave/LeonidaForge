@@ -4,6 +4,7 @@ import type { SocialPost } from '../../types';
 
 function formatDate(iso: string | null): string {
   if (!iso) return '';
+
   try {
     return new Date(iso).toLocaleDateString('en-US', {
       month: 'long',
@@ -21,10 +22,13 @@ interface SocialPostCardProps {
 
 export const SocialPostCard: React.FC<SocialPostCardProps> = ({ post }) => {
   const date = formatDate(post.date);
-  // Construct x.com URL if not stored
+
+  // Construct X URL if not stored
   const xUrl =
     post.url ??
-    (post.post_id ? `https://x.com/${post.username}/status/${post.post_id}` : null);
+    (post.post_id
+      ? `https://x.com/${post.username}/status/${post.post_id}`
+      : null);
 
   return (
     <article
@@ -37,19 +41,28 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({ post }) => {
           <div className="w-9 h-9 rounded-full bg-[#1d9bf0]/10 border border-[#1d9bf0]/20 flex items-center justify-center shrink-0">
             <Twitter className="w-4 h-4 text-[#1d9bf0]" />
           </div>
+
           <div>
-            <div className="text-sm font-bold text-[#f8fafc]">@{post.username}</div>
-            {date && <div className="text-[11px] text-[#64748b]">{date}</div>}
+            <div className="text-sm font-bold text-[#f8fafc]">
+              @{post.username}
+            </div>
+
+            {date && (
+              <div className="text-[11px] text-[#64748b]">
+                {date}
+              </div>
+            )}
           </div>
         </div>
+
         <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase bg-[#1d9bf0]/10 text-[#1d9bf0] border border-[#1d9bf0]/30 shrink-0">
           X / SOCIAL
         </span>
       </div>
 
-      {/* Post text */}
+      {/* AI-generated news write-up */}
       <p className="text-sm text-[#c8d3e8] leading-relaxed whitespace-pre-wrap line-clamp-6">
-        {post.raw_script}
+        {post.classifier}
       </p>
 
       {/* Footer */}

@@ -339,12 +339,8 @@ export const PrivacyPage: React.FC = () => {
       </div>
 
       {/* Feedback Module */}
-      <section className="pt-4">
-        <FeedbackModule
-          pageSlug="privacy-policy"
-          contextTitle="Privacy Policy & Data Rights"
-        />
-      </section>
+    
+      
     </div>
   );
 };

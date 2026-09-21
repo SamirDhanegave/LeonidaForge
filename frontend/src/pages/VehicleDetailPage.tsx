@@ -388,10 +388,7 @@ export const VehicleDetailPage: React.FC = () => {
       </section>
 
       {/* Demand Discovery Feedback */}
-      <FeedbackModule
-        pageSlug={`vehicle-${vehicle.slug}`}
-        contextTitle={`${vehicle.name} Specs & Telemetry`}
-      />
+   
     </div>
   );
 };

@@ -64,13 +64,32 @@ def _reference_text(news):
 # ============================================================
 
 def write_post_article(post):
-    """Stage 1 — turn a monitored X post into a human-sounding write-up."""
+    """Stage 1 — turn a monitored X post into a natural, human-sounding news write-up."""
+
     prompt = f"""
 You are a gaming news writer covering GTA VI.
 
-Below is a post from X (Twitter) that was picked up by a monitoring tool.
-Write a short article about it, the way a real person would write it.
+Below is a post collected from X (Twitter) by a monitoring tool.
 
+Your job is to read the post and turn it into a short, natural-sounding news write-up.
+
+IMPORTANT RULES:
+
+1. Write ONLY the news article.
+2. Do not mention that you are an AI, monitoring tool, or language model.
+3. Do not mention the username, account name, author, or source name.
+4. Do not add a headline, title, byline, labels, or sections.
+5. Do not use hyphens or dash-style formatting.
+6. Do not invent information that is not present in the post.
+7. Keep the writing natural, like a real gaming news article.
+8. Explain what happened clearly instead of simply copying the original wording.
+9. If the post contains enough information to describe an actual GTA VI related development, write the article normally.
+10. If the post is clearly broken, incomplete, meaningless, or contains only a single word or a very short fragment that does not provide usable news information, DO NOT try to create an article.
+11. For an invalid or unusable post, output EXACTLY:
+
+Failed to fetch a proper X news post. Please report this to the developers.
+
+12. Do not add anything before or after that error message.
 AUTHOR:
 {_clean(post.get("username")) or _clean(post.get("author")) or "Unknown"}
 

@@ -77,13 +77,7 @@ export const GuidesPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Demand Discovery Feedback */}
-      <section className="pt-6">
-        <FeedbackModule
-          pageSlug="guides-directory"
-          contextTitle="Guides Index & Search Topics"
-        />
-      </section>
+ 
     </div>
   );
 };

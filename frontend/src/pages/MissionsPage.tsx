@@ -244,12 +244,7 @@ export const MissionsPage: React.FC = () => {
       </div>
 
       {/* Demand Discovery Feedback on Missions */}
-      <section className="pt-6">
-        <FeedbackModule
-          pageSlug="missions-directory"
-          contextTitle="Missions, Heists & Contract Directory"
-        />
-      </section>
+    
     </div>
   );
 };

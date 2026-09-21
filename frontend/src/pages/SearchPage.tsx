@@ -289,12 +289,7 @@ export const SearchPage: React.FC = () => {
       </div>
 
       {/* Demand Discovery Feedback */}
-      <section className="pt-6">
-        <FeedbackModule
-          pageSlug="search-index"
-          contextTitle="Global Search Query Experience"
-        />
-      </section>
+
     </div>
   );
 };

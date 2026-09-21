@@ -275,12 +275,7 @@ export const TrackerPage: React.FC = () => {
       </div>
 
       {/* Demand Discovery Feedback on Tracker */}
-      <section className="pt-6">
-        <FeedbackModule
-          pageSlug="tracker-tool"
-          contextTitle="100% Progress Tracker & Checklist"
-        />
-      </section>
+  
     </div>
   );
 };

@@ -517,10 +517,7 @@ export const VehiclesPage: React.FC = () => {
       </section>
 
       {/* User Discovery Feedback */}
-      <FeedbackModule
-        pageSlug="vehicles-directory"
-        contextTitle="Leonida Vehicle Directory & Telemetry"
-      />
+
     </div>
   );
 };
