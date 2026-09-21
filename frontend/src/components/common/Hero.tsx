@@ -9,6 +9,254 @@ import {
   Wrench,
 } from 'lucide-react';
 import { Link } from '../../services/router';
+
+// =============================================================
+// Background animation
+// =============================================================
+const InteractiveNetworkBackground: React.FC = () => {
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+
+    if (!canvas || !container) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrame = 0;
+    let width = 0;
+    let height = 0;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    const mouse = {
+      x: 0,
+      y: 0,
+      active: false,
+    };
+
+    type Point = {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      baseVx: number;
+      baseVy: number;
+      radius: number;
+    };
+
+    let points: Point[] = [];
+
+    const createPoints = () => {
+      const area = width * height;
+
+      // Automatically adapts the number of points to the screen size.
+      const count = Math.max(
+        24,
+        Math.min(70, Math.floor(area / 18000)),
+      );
+
+      points = Array.from({ length: count }, () => {
+        const vx = (Math.random() - 0.5) * 0.18;
+        const vy = (Math.random() - 0.5) * 0.18;
+
+        return {
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx,
+          vy,
+          baseVx: vx,
+          baseVy: vy,
+          radius: Math.random() * 1.5 + 0.5,
+        };
+      });
+    };
+
+    const resize = () => {
+      const rect = container.getBoundingClientRect();
+
+      width = rect.width;
+      height = rect.height;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      // Guard against a zero-size container on first paint (e.g. before
+      // layout has settled), which would otherwise leave the canvas
+      // with no backing store and nothing would ever draw.
+      if (width === 0 || height === 0) return;
+
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      createPoints();
+    };
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+
+      mouse.x = event.clientX - rect.left;
+      mouse.y = event.clientY - rect.top;
+      mouse.active = true;
+    };
+
+    const handlePointerLeave = () => {
+      mouse.active = false;
+    };
+
+    const update = () => {
+      for (const point of points) {
+        point.x += point.vx;
+        point.y += point.vy;
+
+        // Soft wrapping instead of hard bouncing.
+        if (point.x < -20) point.x = width + 20;
+        if (point.x > width + 20) point.x = -20;
+        if (point.y < -20) point.y = height + 20;
+        if (point.y > height + 20) point.y = -20;
+
+        if (mouse.active) {
+          const dx = point.x - mouse.x;
+          const dy = point.y - mouse.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          const influence = 150;
+
+          if (distance < influence && distance > 0) {
+            const force = (1 - distance / influence) * 0.018;
+
+            point.vx += (dx / distance) * force;
+            point.vy += (dy / distance) * force;
+          }
+        }
+
+        // Slowly return to natural movement.
+        point.vx += (point.baseVx - point.vx) * 0.01;
+        point.vy += (point.baseVy - point.vy) * 0.01;
+      }
+    };
+
+    const draw = () => {
+      if (width === 0 || height === 0) return;
+
+      ctx.clearRect(0, 0, width, height);
+
+      // Dark background.
+      ctx.fillStyle = '#07090d';
+      ctx.fillRect(0, 0, width, height);
+
+      // Subtle radial glow around pointer.
+      if (mouse.active) {
+        const glow = ctx.createRadialGradient(
+          mouse.x,
+          mouse.y,
+          0,
+          mouse.x,
+          mouse.y,
+          220,
+        );
+
+        glow.addColorStop(0, 'rgba(255,255,255,0.055)');
+        glow.addColorStop(1, 'rgba(255,255,255,0)');
+
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, width, height);
+      }
+
+      // Draw connections.
+      for (let i = 0; i < points.length; i++) {
+        const a = points[i];
+
+        for (let j = i + 1; j < points.length; j++) {
+          const b = points[j];
+
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          const maxDistance = 145;
+
+          if (distance > maxDistance) continue;
+
+          const opacity =
+            (1 - distance / maxDistance) * 0.24;
+
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+
+          ctx.strokeStyle = `rgba(255,255,255,${opacity})`;
+          ctx.lineWidth = 0.65;
+          ctx.stroke();
+        }
+      }
+
+      // Draw points.
+      for (const point of points) {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
+
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.fill();
+      }
+    };
+
+    const animate = () => {
+      update();
+      draw();
+      animationFrame = requestAnimationFrame(animate);
+    };
+
+    const resizeObserver = new ResizeObserver(resize);
+
+    resizeObserver.observe(container);
+
+    canvas.addEventListener('pointermove', handlePointerMove);
+    canvas.addEventListener('pointerleave', handlePointerLeave);
+
+    resize();
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      resizeObserver.disconnect();
+
+      canvas.removeEventListener(
+        'pointermove',
+        handlePointerMove,
+      );
+
+      canvas.removeEventListener(
+        'pointerleave',
+        handlePointerLeave,
+      );
+    };
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="absolute inset-0 overflow-hidden"
+      aria-hidden="true"
+    >
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+      />
+
+      {/* Soft readability overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-[#090b10]/80" />
+    </div>
+  );
+};
+
+// =============================================================
+// Hero
+// =============================================================
 export const Hero: React.FC = () => {
   return (
     <div className="w-full">
@@ -19,15 +267,26 @@ export const Hero: React.FC = () => {
         id="hero"
         className="relative overflow-hidden border-b border-[#1e2434]"
       >
-        {/* Background effects */}
-        <div className="absolute inset-0 bg-[#090b10]" />
+        {/*
+          Background layer: the animated canvas is now actually mounted
+          and rendered here (it was previously defined but never used).
+          It sits at the very bottom of the stack and keeps
+          `pointer-events` enabled so the pointermove/pointerleave
+          listeners it attaches to the canvas actually fire.
+        */}
+        <InteractiveNetworkBackground />
 
-        <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-[#c8f135]/[0.07] blur-3xl" />
-        <div className="absolute top-20 right-[-8rem] w-96 h-96 rounded-full bg-[#f472b6]/[0.06] blur-3xl" />
-        <div className="absolute bottom-[-10rem] left-1/2 -translate-x-1/2 w-[32rem] h-[20rem] rounded-full bg-[#8b5cf6]/[0.05] blur-3xl" />
+        {/*
+          Decorative color glows. These sit above the canvas but must
+          stay `pointer-events-none`, otherwise they'd form an invisible
+          layer blocking the mouse from ever reaching the canvas.
+        */}
+        <div className="pointer-events-none absolute -top-32 -left-32 w-80 h-80 rounded-full bg-[#c8f135]/[0.07] blur-3xl" />
+        <div className="pointer-events-none absolute top-20 right-[-8rem] w-96 h-96 rounded-full bg-[#f472b6]/[0.06] blur-3xl" />
+        <div className="pointer-events-none absolute bottom-[-10rem] left-1/2 -translate-x-1/2 w-[32rem] h-[20rem] rounded-full bg-[#8b5cf6]/[0.05] blur-3xl" />
 
         {/* Subtle grid */}
-        <div className="absolute inset-0 opacity-[0.035] pointer-events-none">
+        <div className="pointer-events-none absolute inset-0 opacity-[0.035]">
           <div
             className="h-full w-full"
             style={{
@@ -38,7 +297,13 @@ export const Hero: React.FC = () => {
           />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/*
+          Content layer. It's `pointer-events-none` as a whole so the
+          canvas underneath keeps receiving mouse movement everywhere
+          text/whitespace covers it; only the actual clickable elements
+          (links) opt back in with `pointer-events-auto`.
+        */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pointer-events-none">
           <div className="min-h-[78vh] flex items-center py-20 sm:py-24 lg:py-28">
             <div className="w-full">
               {/* Small badge */}
@@ -73,7 +338,7 @@ export const Hero: React.FC = () => {
                   <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                     <Link
                       to="/money"
-                      className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[#c8f135] px-6 py-3.5 text-sm font-bold text-[#0a0c10] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_35px_rgba(200,241,53,0.18)]"
+                      className="pointer-events-auto group inline-flex items-center justify-center gap-2 rounded-xl bg-[#c8f135] px-6 py-3.5 text-sm font-bold text-[#0a0c10] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_35px_rgba(200,241,53,0.18)]"
                     >
                       <Wrench className="w-4 h-4" />
                       <span>Explore Tools</span>
@@ -82,7 +347,7 @@ export const Hero: React.FC = () => {
 
                     <Link
                       to="/news"
-                      className="group inline-flex items-center justify-center gap-2 rounded-xl border border-[#2b3447] bg-[#11151d]/80 px-6 py-3.5 text-sm font-bold text-[#f8fafc] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#46546c] hover:bg-[#161b25]"
+                      className="pointer-events-auto group inline-flex items-center justify-center gap-2 rounded-xl border border-[#2b3447] bg-[#11151d]/80 px-6 py-3.5 text-sm font-bold text-[#f8fafc] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#46546c] hover:bg-[#161b25]"
                     >
                       <Newspaper className="w-4 h-4 text-[#c8f135]" />
                       <span>Explore News</span>
@@ -115,7 +380,7 @@ export const Hero: React.FC = () => {
                 </div>
 
                 {/* Right visual panel */}
-                <div className="relative max-w-xl w-full mx-auto lg:mx-0 lg:ml-auto">
+                <div className="pointer-events-auto relative max-w-xl w-full mx-auto lg:mx-0 lg:ml-auto">
                   <div className="relative rounded-3xl border border-[#252e40] bg-[#0f131b]/90 backdrop-blur-xl p-4 sm:p-5 shadow-2xl">
                     {/* Fake window header */}
                     <div className="flex items-center justify-between px-2 pb-4">
@@ -203,7 +468,7 @@ export const Hero: React.FC = () => {
               <div className="mt-12 sm:mt-16 flex justify-center lg:justify-start">
                 <a
                   href="#about"
-                  className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#58667a] hover:text-[#c8f135] transition-colors"
+                  className="pointer-events-auto inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#58667a] hover:text-[#c8f135] transition-colors"
                 >
                   <span>Discover Leonida Forge</span>
                   <ArrowRight className="w-3.5 h-3.5" />
