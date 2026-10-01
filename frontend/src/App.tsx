@@ -10,26 +10,28 @@ import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 
 // Existing pages
-import { HomePage }        from './pages/HomePage';
-import { VehiclesPage }    from './pages/VehiclesPage';
+
+import { HomePage } from './pages/HomePage';
+import { VehiclesPage } from './pages/VehiclesPage';
 import { VehicleDetailPage } from './pages/VehicleDetailPage';
-import { ComparePage }     from './pages/ComparePage';
-import { MoneyPage }       from './pages/MoneyPage';
-import { TrackerPage }     from './pages/TrackerPage';
-import { MissionsPage }    from './pages/MissionsPage';
-import { LocationsPage }   from './pages/LocationsPage';
-import { GuidesPage }      from './pages/GuidesPage';
+import { ComparePage } from './pages/ComparePage';
+import { MoneyPage } from './pages/MoneyPage';
+import { TrackerPage } from './pages/TrackerPage';
+import { MissionsPage } from './pages/MissionsPage';
+import { LocationsPage } from './pages/LocationsPage';
+import { GuidesPage } from './pages/GuidesPage';
 import { GuideDetailPage } from './pages/GuideDetailPage';
-import { SearchPage }      from './pages/SearchPage';
-import { AboutPage }       from './pages/AboutPage';
-import { PrivacyPage }     from './pages/PrivacyPage';
-import { NotFoundPage }    from './pages/NotFoundPage';
+import { SearchPage } from './pages/SearchPage';
+import { AboutPage } from './pages/AboutPage';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { NotFoundPage } from './pages/NotFoundPage';
+import Waitlist from './pages/Waitlist';
 
 // New pages — news, social, admin
-import { NewsPage }          from './pages/NewsPage';
-import { NewsArticlePage }   from './pages/NewsArticlePage';
-import { SocialPage }        from './pages/SocialPage';
-import { AdminScriptsPage }  from './pages/AdminScriptsPage';
+import { NewsPage } from './pages/NewsPage';
+import { NewsArticlePage } from './pages/NewsArticlePage';
+import { SocialPage } from './pages/SocialPage';
+import { AdminScriptsPage } from './pages/AdminScriptsPage';
 
 const RouteRenderer: React.FC = () => {
   const { path } = useRouter();
@@ -39,11 +41,13 @@ const RouteRenderer: React.FC = () => {
     if (window.location.hash) {
       const hashId = window.location.hash.replace('#', '');
       const el = document.getElementById(hashId);
+
       if (el) {
         el.scrollIntoView({ behavior: 'smooth' });
         return;
       }
     }
+
     window.scrollTo(0, 0);
   }, [path]);
 
@@ -59,7 +63,7 @@ const RouteRenderer: React.FC = () => {
     return <GuideDetailPage />;
   }
 
-  // /news/:id  (numeric id, not just /news)
+  // /news/:id
   if (path.startsWith('/news/') && path !== '/news') {
     return <NewsArticlePage />;
   }
@@ -73,6 +77,7 @@ const RouteRenderer: React.FC = () => {
     // News & Social
     case '/news':
       return <NewsPage />;
+
     case '/social':
       return <SocialPage />;
 
@@ -84,16 +89,20 @@ const RouteRenderer: React.FC = () => {
     // Vehicles
     case '/vehicles':
       return <VehiclesPage />;
+
     case '/compare':
       return <ComparePage />;
 
     // Tools
     case '/money':
       return <MoneyPage />;
+
     case '/tracker':
       return <TrackerPage />;
+
     case '/missions':
       return <MissionsPage />;
+
     case '/locations':
       return <LocationsPage />;
 
@@ -104,10 +113,16 @@ const RouteRenderer: React.FC = () => {
     // Utility
     case '/search':
       return <SearchPage />;
+
     case '/about':
       return <AboutPage />;
+
     case '/privacy':
       return <PrivacyPage />;
+
+    // Community
+    case '/waitlist':
+      return <Waitlist />;
 
     case '/404':
     default:
