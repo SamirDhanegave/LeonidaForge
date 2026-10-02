@@ -346,11 +346,11 @@ export const Hero: React.FC = () => {
                     </Link>
 
                     <Link
-                      to="/news"
+                      to="/waitlist"
                       className="pointer-events-auto group inline-flex items-center justify-center gap-2 rounded-xl border border-[#2b3447] bg-[#11151d]/80 px-6 py-3.5 text-sm font-bold text-[#f8fafc] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#46546c] hover:bg-[#161b25]"
                     >
                       <Newspaper className="w-4 h-4 text-[#c8f135]" />
-                      <span>Explore News</span>
+                      <span>Join Waitlist</span>
                       <ArrowRight className="w-4 h-4 text-[#8490a5] transition-transform group-hover:translate-x-1" />
                     </Link>
                   </div>
