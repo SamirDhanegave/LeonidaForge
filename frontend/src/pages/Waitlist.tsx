@@ -149,7 +149,7 @@ export default function Waitlist() {
       }
 
       const response = await fetch(
-        `${API_URL}/api/waitlist`,
+        `${API_URL}/waitlist`,
         {
           method: "POST",
           headers: {
