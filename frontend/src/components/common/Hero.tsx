@@ -1,18 +1,20 @@
 import React from 'react';
+
 import {
   ArrowRight,
   Compass,
   Layers3,
   Newspaper,
-  Smartphone,
   Sparkles,
   Wrench,
 } from 'lucide-react';
+
 import { Link } from '../../services/router';
 
 // =============================================================
-// Background animation
+// Animated network background
 // =============================================================
+
 const InteractiveNetworkBackground: React.FC = () => {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
@@ -24,6 +26,7 @@ const InteractiveNetworkBackground: React.FC = () => {
     if (!canvas || !container) return;
 
     const ctx = canvas.getContext('2d');
+
     if (!ctx) return;
 
     let animationFrame = 0;
@@ -52,7 +55,6 @@ const InteractiveNetworkBackground: React.FC = () => {
     const createPoints = () => {
       const area = width * height;
 
-      // Automatically adapts the number of points to the screen size.
       const count = Math.max(
         24,
         Math.min(70, Math.floor(area / 18000)),
@@ -81,13 +83,11 @@ const InteractiveNetworkBackground: React.FC = () => {
       height = rect.height;
       dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-      // Guard against a zero-size container on first paint (e.g. before
-      // layout has settled), which would otherwise leave the canvas
-      // with no backing store and nothing would ever draw.
       if (width === 0 || height === 0) return;
 
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
+
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
 
@@ -113,12 +113,14 @@ const InteractiveNetworkBackground: React.FC = () => {
         point.x += point.vx;
         point.y += point.vy;
 
-        // Soft wrapping instead of hard bouncing.
+        // Soft wrapping
         if (point.x < -20) point.x = width + 20;
         if (point.x > width + 20) point.x = -20;
+
         if (point.y < -20) point.y = height + 20;
         if (point.y > height + 20) point.y = -20;
 
+        // Mouse interaction
         if (mouse.active) {
           const dx = point.x - mouse.x;
           const dy = point.y - mouse.y;
@@ -134,7 +136,7 @@ const InteractiveNetworkBackground: React.FC = () => {
           }
         }
 
-        // Slowly return to natural movement.
+        // Smoothly return to natural movement
         point.vx += (point.baseVx - point.vx) * 0.01;
         point.vy += (point.baseVy - point.vy) * 0.01;
       }
@@ -143,13 +145,12 @@ const InteractiveNetworkBackground: React.FC = () => {
     const draw = () => {
       if (width === 0 || height === 0) return;
 
+      // IMPORTANT:
+      // Clear only. Do NOT paint a dark background here.
+      // This keeps background.png visible underneath.
       ctx.clearRect(0, 0, width, height);
 
-      // Dark background.
-      ctx.fillStyle = '#07090d';
-      ctx.fillRect(0, 0, width, height);
-
-      // Subtle radial glow around pointer.
+      // Mouse glow
       if (mouse.active) {
         const glow = ctx.createRadialGradient(
           mouse.x,
@@ -160,14 +161,14 @@ const InteractiveNetworkBackground: React.FC = () => {
           220,
         );
 
-        glow.addColorStop(0, 'rgba(255,255,255,0.055)');
+        glow.addColorStop(0, 'rgba(255,255,255,0.08)');
         glow.addColorStop(1, 'rgba(255,255,255,0)');
 
         ctx.fillStyle = glow;
         ctx.fillRect(0, 0, width, height);
       }
 
-      // Draw connections.
+      // Draw connections
       for (let i = 0; i < points.length; i++) {
         const a = points[i];
 
@@ -195,12 +196,19 @@ const InteractiveNetworkBackground: React.FC = () => {
         }
       }
 
-      // Draw points.
+      // Draw nodes
       for (const point of points) {
         ctx.beginPath();
-        ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
 
-        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.arc(
+          point.x,
+          point.y,
+          point.radius,
+          0,
+          Math.PI * 2,
+        );
+
+        ctx.fillStyle = 'rgba(255,255,255,0.65)';
         ctx.fill();
       }
     };
@@ -208,6 +216,7 @@ const InteractiveNetworkBackground: React.FC = () => {
     const animate = () => {
       update();
       draw();
+
       animationFrame = requestAnimationFrame(animate);
     };
 
@@ -240,16 +249,13 @@ const InteractiveNetworkBackground: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 overflow-hidden"
+      className="pointer-events-none absolute inset-0 overflow-hidden"
       aria-hidden="true"
     >
       <canvas
         ref={canvasRef}
         className="absolute inset-0 h-full w-full"
       />
-
-      {/* Soft readability overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-[#090b10]/80" />
     </div>
   );
 };
@@ -257,223 +263,319 @@ const InteractiveNetworkBackground: React.FC = () => {
 // =============================================================
 // Hero
 // =============================================================
+
 export const Hero: React.FC = () => {
   return (
     <div className="w-full">
+
       {/* =========================================================
           HERO SECTION
       ========================================================== */}
+
       <section
         id="hero"
-        className="relative overflow-hidden border-b border-[#1e2434]"
+        className="relative overflow-hidden border-b border-[#1e2434] bg-transparent"
       >
-        {/*
-          Background layer: the animated canvas is now actually mounted
-          and rendered here (it was previously defined but never used).
-          It sits at the very bottom of the stack and keeps
-          `pointer-events` enabled so the pointermove/pointerleave
-          listeners it attaches to the canvas actually fire.
-        */}
-        <InteractiveNetworkBackground />
 
-        {/*
-          Decorative color glows. These sit above the canvas but must
-          stay `pointer-events-none`, otherwise they'd form an invisible
-          layer blocking the mouse from ever reaching the canvas.
-        */}
-        <div className="pointer-events-none absolute -top-32 -left-32 w-80 h-80 rounded-full bg-[#c8f135]/[0.07] blur-3xl" />
-        <div className="pointer-events-none absolute top-20 right-[-8rem] w-96 h-96 rounded-full bg-[#f472b6]/[0.06] blur-3xl" />
-        <div className="pointer-events-none absolute bottom-[-10rem] left-1/2 -translate-x-1/2 w-[32rem] h-[20rem] rounded-full bg-[#8b5cf6]/[0.05] blur-3xl" />
+        {/* =====================================================
+            MOVING NODE / NETWORK GRAPH
+        ====================================================== */}
 
-        {/* Subtle grid */}
-        <div className="pointer-events-none absolute inset-0 opacity-[0.035]">
-          <div
-            className="h-full w-full"
-            style={{
-              backgroundImage:
-                'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)',
-              backgroundSize: '40px 40px',
-            }}
-          />
+        <div className="pointer-events-none absolute inset-0">
+          <InteractiveNetworkBackground />
         </div>
 
-        {/*
-          Content layer. It's `pointer-events-none` as a whole so the
-          canvas underneath keeps receiving mouse movement everywhere
-          text/whitespace covers it; only the actual clickable elements
-          (links) opt back in with `pointer-events-auto`.
-        */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pointer-events-none">
-          <div className="min-h-[78vh] flex items-center py-20 sm:py-24 lg:py-28">
+        {/* =====================================================
+            COLOR GLOWS
+        ====================================================== */}
+
+        <div className="pointer-events-none absolute -left-32 -top-32 h-80 w-80 rounded-full bg-[#c8f135]/[0.06] blur-3xl" />
+
+        <div className="pointer-events-none absolute -right-32 top-20 h-96 w-96 rounded-full bg-[#f472b6]/[0.05] blur-3xl" />
+
+        <div className="pointer-events-none absolute bottom-[-10rem] left-1/2 h-[20rem] w-[32rem] -translate-x-1/2 rounded-full bg-[#8b5cf6]/[0.04] blur-3xl" />
+
+        {/* =====================================================
+            CONTENT
+        ====================================================== */}
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+          <div className="flex min-h-[78vh] items-center py-20 sm:py-24 lg:py-28">
+
             <div className="w-full">
-              {/* Small badge */}
+
+              {/* Badge */}
               <div className="flex justify-center lg:justify-start">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#273145] bg-[#11151d]/90 px-3.5 py-1.5 text-[11px] sm:text-xs font-semibold tracking-wide text-[#c8f135]">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>AN INDEPENDENT GTA VI FAN PROJECT</span>
+
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#273145] bg-[#11151d]/90 px-3.5 py-1.5 text-[11px] font-semibold tracking-wide text-[#c8f135] shadow-[0_0_20px_rgba(200,241,53,0.05)]">
+
+                  <Sparkles className="h-3.5 w-3.5" />
+
+                  <span>
+                    AN INDEPENDENT GTA VI FAN PROJECT
+                  </span>
+
                 </div>
+
               </div>
 
               {/* Main content */}
-              <div className="mt-7 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-16 items-center">
-                {/* Left */}
+              <div className="mt-7 grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+
+                {/* =================================================
+                    LEFT
+                ================================================== */}
+
                 <div className="text-center lg:text-left">
-                  <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-[-0.045em] leading-[0.92] text-[#f8fafc]">
+
+                  <h1 className="text-5xl font-black leading-[0.92] tracking-[-0.045em] text-[#f8fafc] sm:text-6xl md:text-7xl lg:text-8xl">
+
                     LEONIDA
-                    <span className="block text-[#c8f135]">FORGE</span>
+
+                    <span className="block text-[#c8f135] drop-shadow-[0_0_25px_rgba(200,241,53,0.12)]">
+                      FORGE
+                    </span>
+
                   </h1>
 
-                  <p className="mt-6 max-w-2xl mx-auto lg:mx-0 text-lg sm:text-xl lg:text-2xl font-medium leading-relaxed text-[#d8dee9]">
+                  <p className="mx-auto mt-6 max-w-2xl text-lg font-medium leading-relaxed text-[#d8dee9] sm:text-xl lg:mx-0 lg:text-2xl">
                     A growing collection of tools, experiments, information,
                     and community-focused features built around GTA VI.
                   </p>
 
-                  <p className="mt-4 max-w-xl mx-auto lg:mx-0 text-sm sm:text-base leading-relaxed text-[#8490a5]">
+                  <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-[#8490a5] sm:text-base lg:mx-0">
                     Explore useful tools, discover new features, follow what's
                     happening around GTA VI, and see what the Forge has to
                     offer.
                   </p>
 
-                  {/* CTA buttons */}
-                  <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                  {/* CTA */}
+                  <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
+
                     <Link
                       to="/money"
-                      className="pointer-events-auto group inline-flex items-center justify-center gap-2 rounded-xl bg-[#c8f135] px-6 py-3.5 text-sm font-bold text-[#0a0c10] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_35px_rgba(200,241,53,0.18)]"
+                      className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[#c8f135] px-6 py-3.5 text-sm font-bold text-[#0a0c10] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_35px_rgba(200,241,53,0.25)]"
                     >
-                      <Wrench className="w-4 h-4" />
-                      <span>Explore Tools</span>
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+
+                      <Wrench className="h-4 w-4" />
+
+                      <span>
+                        Explore Tools
+                      </span>
+
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+
                     </Link>
 
                     <Link
                       to="/waitlist"
-                      className="pointer-events-auto group inline-flex items-center justify-center gap-2 rounded-xl border border-[#2b3447] bg-[#11151d]/80 px-6 py-3.5 text-sm font-bold text-[#f8fafc] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#46546c] hover:bg-[#161b25]"
+                      className="group inline-flex items-center justify-center gap-2 rounded-xl border border-[#2b3447] bg-[#11151d]/80 px-6 py-3.5 text-sm font-bold text-[#f8fafc] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#46546c] hover:bg-[#161b25]"
                     >
-                      <Newspaper className="w-4 h-4 text-[#c8f135]" />
-                      <span>Join Waitlist</span>
-                      <ArrowRight className="w-4 h-4 text-[#8490a5] transition-transform group-hover:translate-x-1" />
+
+                      <Newspaper className="h-4 w-4 text-[#c8f135]" />
+
+                      <span>
+                        Join Waitlist
+                      </span>
+
+                      <ArrowRight className="h-4 w-4 text-[#8490a5] transition-transform group-hover:translate-x-1" />
+
                     </Link>
+
                   </div>
 
                   {/* Mini stats */}
-                  <div className="mt-8 flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 text-[11px] sm:text-xs font-mono uppercase tracking-wide text-[#68758b]">
+                  <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 font-mono text-[11px] uppercase tracking-wide text-[#68758b] sm:text-xs lg:justify-start">
+
                     <span className="inline-flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#c8f135]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#c8f135] shadow-[0_0_8px_rgba(200,241,53,0.8)]" />
                       Tools
                     </span>
 
                     <span className="inline-flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#f472b6]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#f472b6] shadow-[0_0_8px_rgba(244,114,182,0.8)]" />
                       News
                     </span>
 
                     <span className="inline-flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#8b5cf6] shadow-[0_0_8px_rgba(139,92,246,0.8)]" />
                       Community
                     </span>
 
                     <span className="inline-flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#38bdf8] shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
                       Experiments
                     </span>
+
                   </div>
+
                 </div>
 
-                {/* Right visual panel */}
-                <div className="pointer-events-auto relative max-w-xl w-full mx-auto lg:mx-0 lg:ml-auto">
-                  <div className="relative rounded-3xl border border-[#252e40] bg-[#0f131b]/90 backdrop-blur-xl p-4 sm:p-5 shadow-2xl">
-                    {/* Fake window header */}
+                {/* =================================================
+                    RIGHT
+                ================================================== */}
+
+                <div className="relative mx-auto w-full max-w-xl lg:ml-auto">
+
+                  <div className="relative rounded-3xl border border-[#252e40] bg-[#0f131b]/85 p-4 shadow-2xl backdrop-blur-xl sm:p-5">
+
+                    {/* Window header */}
                     <div className="flex items-center justify-between px-2 pb-4">
+
                       <div className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#394355]" />
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#394355]" />
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#394355]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#394355]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#394355]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#394355]" />
                       </div>
 
-                      <div className="text-[10px] font-mono text-[#59667b]">
+                      <div className="font-mono text-[10px] text-[#59667b]">
                         LEONIDA.FORGE
                       </div>
+
                     </div>
 
-                    {/* Main visual */}
-                    <div className="relative overflow-hidden rounded-2xl border border-[#202838] bg-gradient-to-br from-[#171d27] via-[#10151d] to-[#0c0f15]">
+                    {/* Explore Forge panel */}
+                    <div className="relative overflow-hidden rounded-2xl border border-[#202838] bg-gradient-to-br from-[#171d27]/95 via-[#10151d]/95 to-[#0c0f15]/95">
+
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(200,241,53,0.12),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(244,114,182,0.08),transparent_30%)]" />
 
                       <div className="relative p-5 sm:p-7">
+
+                        {/* Header */}
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#67758c]">
+
+                          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#67758c]">
                             Explore the Forge
                           </span>
 
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#2a3447] bg-[#111620] px-2.5 py-1 text-[9px] font-semibold text-[#c8f135]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#c8f135]" />
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#2a3447] bg-[#111620] px-2.5 py-1 text-[9px] font-semibold text-[#c8f135] shadow-[0_0_15px_rgba(200,241,53,0.1)]">
+
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c8f135] shadow-[0_0_8px_rgba(200,241,53,0.9)]" />
+
                             ACTIVE
+
                           </span>
+
                         </div>
 
+                        {/* Four sections */}
                         <div className="mt-8">
+
                           <div className="grid grid-cols-2 gap-3">
-                            <div className="rounded-2xl border border-[#283143] bg-[#141922]/90 p-4">
-                              <Wrench className="w-5 h-5 text-[#c8f135]" />
-                              <div className="mt-5 text-sm font-bold text-[#f8fafc]">
+
+                            {/* =================================================
+                                TOOLS
+                            ================================================== */}
+
+                            <div className="group relative overflow-hidden rounded-2xl border border-[#c8f135]/40 bg-[#141922]/95 p-4 shadow-[0_0_24px_rgba(200,241,53,0.12)] transition-all duration-300 hover:-translate-y-1 hover:border-[#c8f135]/80 hover:shadow-[0_0_40px_rgba(200,241,53,0.28)]">
+
+                              <div className="absolute inset-0 bg-[#c8f135]/[0.035] opacity-100 transition-opacity group-hover:bg-[#c8f135]/[0.07]" />
+
+                              <Wrench className="relative h-5 w-5 text-[#c8f135] drop-shadow-[0_0_9px_rgba(200,241,53,0.95)] transition-transform duration-300 group-hover:scale-110" />
+
+                              <div className="relative mt-5 text-sm font-bold text-[#f8fafc]">
                                 Tools
                               </div>
-                              <p className="mt-1 text-[11px] leading-relaxed text-[#6e7a90]">
+
+                              <p className="relative mt-1 text-[11px] leading-relaxed text-[#6e7a90]">
                                 Useful interactive experiences.
                               </p>
+
                             </div>
 
-                            <div className="rounded-2xl border border-[#283143] bg-[#141922]/90 p-4">
-                              <Newspaper className="w-5 h-5 text-[#f472b6]" />
-                              <div className="mt-5 text-sm font-bold text-[#f8fafc]">
+                            {/* =================================================
+                                NEWS
+                            ================================================== */}
+
+                            <div className="group relative overflow-hidden rounded-2xl border border-[#f472b6]/40 bg-[#141922]/95 p-4 shadow-[0_0_24px_rgba(244,114,182,0.12)] transition-all duration-300 hover:-translate-y-1 hover:border-[#f472b6]/80 hover:shadow-[0_0_40px_rgba(244,114,182,0.28)]">
+
+                              <div className="absolute inset-0 bg-[#f472b6]/[0.035] opacity-100 transition-opacity group-hover:bg-[#f472b6]/[0.07]" />
+
+                              <Newspaper className="relative h-5 w-5 text-[#f472b6] drop-shadow-[0_0_9px_rgba(244,114,182,0.95)] transition-transform duration-300 group-hover:scale-110" />
+
+                              <div className="relative mt-5 text-sm font-bold text-[#f8fafc]">
                                 News
                               </div>
-                              <p className="mt-1 text-[11px] leading-relaxed text-[#6e7a90]">
+
+                              <p className="relative mt-1 text-[11px] leading-relaxed text-[#6e7a90]">
                                 Follow GTA VI developments.
                               </p>
+
                             </div>
 
-                            <div className="rounded-2xl border border-[#283143] bg-[#141922]/90 p-4">
-                              <Layers3 className="w-5 h-5 text-[#8b5cf6]" />
-                              <div className="mt-5 text-sm font-bold text-[#f8fafc]">
+                            {/* =================================================
+                                FEATURES
+                            ================================================== */}
+
+                            <div className="group relative overflow-hidden rounded-2xl border border-[#8b5cf6]/40 bg-[#141922]/95 p-4 shadow-[0_0_24px_rgba(139,92,246,0.12)] transition-all duration-300 hover:-translate-y-1 hover:border-[#8b5cf6]/80 hover:shadow-[0_0_40px_rgba(139,92,246,0.28)]">
+
+                              <div className="absolute inset-0 bg-[#8b5cf6]/[0.035] opacity-100 transition-opacity group-hover:bg-[#8b5cf6]/[0.07]" />
+
+                              <Layers3 className="relative h-5 w-5 text-[#8b5cf6] drop-shadow-[0_0_9px_rgba(139,92,246,0.95)] transition-transform duration-300 group-hover:scale-110" />
+
+                              <div className="relative mt-5 text-sm font-bold text-[#f8fafc]">
                                 Features
                               </div>
-                              <p className="mt-1 text-[11px] leading-relaxed text-[#6e7a90]">
+
+                              <p className="relative mt-1 text-[11px] leading-relaxed text-[#6e7a90]">
                                 More experiences are being built.
                               </p>
+
                             </div>
 
-                            <div className="rounded-2xl border border-[#283143] bg-[#141922]/90 p-4">
-                              <Compass className="w-5 h-5 text-[#38bdf8]" />
-                              <div className="mt-5 text-sm font-bold text-[#f8fafc]">
+                            {/* =================================================
+                                EXPLORE
+                            ================================================== */}
+
+                            <div className="group relative overflow-hidden rounded-2xl border border-[#38bdf8]/40 bg-[#141922]/95 p-4 shadow-[0_0_24px_rgba(56,189,248,0.12)] transition-all duration-300 hover:-translate-y-1 hover:border-[#38bdf8]/80 hover:shadow-[0_0_40px_rgba(56,189,248,0.28)]">
+
+                              <div className="absolute inset-0 bg-[#38bdf8]/[0.035] opacity-100 transition-opacity group-hover:bg-[#38bdf8]/[0.07]" />
+
+                              <Compass className="relative h-5 w-5 text-[#38bdf8] drop-shadow-[0_0_9px_rgba(56,189,248,0.95)] transition-transform duration-300 group-hover:scale-110" />
+
+                              <div className="relative mt-5 text-sm font-bold text-[#f8fafc]">
                                 Explore
                               </div>
-                              <p className="mt-1 text-[11px] leading-relaxed text-[#6e7a90]">
+
+                              <p className="relative mt-1 text-[11px] leading-relaxed text-[#6e7a90]">
                                 Find something new to use.
                               </p>
+
                             </div>
+
                           </div>
+
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Decorative accent */}
-                  <div className="absolute -bottom-4 -right-4 w-28 h-28 border border-[#c8f135]/15 rounded-3xl -z-10" />
-                  <div className="absolute -top-4 -left-4 w-20 h-20 border border-[#f472b6]/10 rounded-2xl -z-10" />
+                  {/* Decorative accents */}
+                  <div className="absolute -bottom-4 -right-4 -z-10 h-28 w-28 rounded-3xl border border-[#c8f135]/15" />
+
+                  <div className="absolute -left-4 -top-4 -z-10 h-20 w-20 rounded-2xl border border-[#f472b6]/10" />
+
                 </div>
+
               </div>
 
               {/* Scroll hint */}
-              <div className="mt-12 sm:mt-16 flex justify-center lg:justify-start">
+              <div className="mt-12 flex justify-center sm:mt-16 lg:justify-start">
+
                 <a
                   href="#about"
-                  className="pointer-events-auto inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#58667a] hover:text-[#c8f135] transition-colors"
+                  className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#58667a] transition-colors hover:text-[#c8f135]"
                 >
-                  <span>Discover Leonida Forge</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>
+                    Discover Leonida Forge
+                  </span>
+
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </a>
+
               </div>
+
             </div>
           </div>
         </div>
@@ -482,74 +584,108 @@ export const Hero: React.FC = () => {
       {/* =========================================================
           ABOUT SECTION
       ========================================================== */}
+
       <section
         id="about"
         className="border-b border-[#1e2434] bg-[#0b0e13]"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-28">
-          <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-20 items-start">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-28">
+
+          <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
+
             {/* Heading */}
             <div>
+
               <div className="inline-flex items-center gap-2 rounded-full border border-[#273145] bg-[#11151d] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#c8f135]">
-                <Compass className="w-3.5 h-3.5" />
+
+                <Compass className="h-3.5 w-3.5" />
+
                 About the Project
+
               </div>
 
-              <h2 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#f8fafc]">
+              <h2 className="mt-5 text-3xl font-black tracking-tight text-[#f8fafc] sm:text-4xl lg:text-5xl">
+
                 Built to be
-                <span className="text-[#c8f135]"> explored.</span>
+
+                <span className="text-[#c8f135]">
+                  {' '}explored.
+                </span>
+
               </h2>
+
             </div>
 
             {/* Content */}
             <div className="space-y-5">
-              <p className="text-base sm:text-lg leading-relaxed text-[#d4dae4]">
+
+              <p className="text-base leading-relaxed text-[#d4dae4] sm:text-lg">
                 Leonida Forge is an independent GTA VI fan project built as a
                 collection of useful tools, information, experiments, and
                 community-focused features.
               </p>
 
-              <p className="text-sm sm:text-base leading-relaxed text-[#818da1]">
+              <p className="text-sm leading-relaxed text-[#818da1] sm:text-base">
                 It isn't designed around a single feature. The Forge is meant
                 to grow over time, with new ideas and experiences being added
                 as the project develops.
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
+              <div className="grid grid-cols-1 gap-3 pt-3 sm:grid-cols-2">
+
                 <div className="rounded-2xl border border-[#202938] bg-[#10141b] p-5">
-                  <Wrench className="w-5 h-5 text-[#c8f135]" />
+
+                  <Wrench className="h-5 w-5 text-[#c8f135]" />
+
                   <h3 className="mt-4 text-sm font-bold text-[#f8fafc]">
                     Useful tools
                   </h3>
+
                   <p className="mt-2 text-xs leading-relaxed text-[#748095]">
                     Interactive features designed to make exploring GTA VI
                     information easier.
                   </p>
+
                 </div>
 
                 <div className="rounded-2xl border border-[#202938] bg-[#10141b] p-5">
-                  <Sparkles className="w-5 h-5 text-[#f472b6]" />
+
+                  <Sparkles className="h-5 w-5 text-[#f472b6]" />
+
                   <h3 className="mt-4 text-sm font-bold text-[#f8fafc]">
                     Experimental ideas
                   </h3>
+
                   <p className="mt-2 text-xs leading-relaxed text-[#748095]">
                     A place to build, test, and showcase different GTA VI
                     concepts.
                   </p>
+
                 </div>
+
               </div>
 
               <div className="pt-2">
+
                 <Link
                   to="/about"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-[#c8f135] hover:underline"
                 >
-                  <span>Learn more about Leonida Forge</span>
-                  <ArrowRight className="w-4 h-4" />
+
+                  <span>
+                    Learn more about Leonida Forge
+                  </span>
+
+                  <ArrowRight className="h-4 w-4" />
+
                 </Link>
+
               </div>
+
             </div>
+
           </div>
+
         </div>
       </section>
 

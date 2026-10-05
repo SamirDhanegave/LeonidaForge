@@ -11,6 +11,7 @@ import { EmptyState } from '../components/common/EmptyState';
 import { getSiteUrl } from '../config/seoConfig';
 import { GUIDES_DATA } from '../data/guides';
 import { Hero } from '../components/common/Hero';
+import heroBackground from '../assets/background.png';
 
 import {
   Car,
@@ -117,15 +118,53 @@ export const HomePage: React.FC = () => {
   ];
 
   return (
-    <div id="home-page-container" className="space-y-16 sm:space-y-20">
+    <div id="home-page-container" className="space-y-0">
 
-      {/* ── SECTION 1: Hero ─────────────────────────────────────── */}
-      <Hero />
+      {/* =========================================================
+          SHARED NAVBAR + HERO BACKGROUND
+
+          The Navbar lives above HomePage in the app shell. This
+          background intentionally extends upward so the designed
+          artwork continues behind the Navbar instead of starting
+          below it.
+      ========================================================== */}
+      <div className="relative isolate">
+
+        {/*
+          Full-viewport artwork for the Navbar + Hero.
+          Using a viewport-width layer prevents the image from inheriting
+          any width constraints from the HomePage/app shell.
+        */}
+        <div
+          className="pointer-events-none absolute left-1/2 top-[-4.5rem] h-[calc(100%+4.5rem)] w-screen -translate-x-1/2 overflow-hidden sm:top-[-5.5rem] sm:h-[calc(100%+5.5rem)] lg:top-[-7rem] lg:h-[calc(100%+7rem)]"
+          aria-hidden="true"
+        >
+          <img
+            src={heroBackground}
+            alt=""
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            sizes="100vw"
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: '50% 50%' }}
+          />
+
+          {/* Readability overlays shared by Navbar + Hero */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#05070b]/90 via-[#05070b]/55 to-[#05070b]/15" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#07090e]/95 via-transparent to-[#05070b]/20" />
+        </div>
+
+        {/* ── SECTION 1: Hero ─────────────────────────────────────── */}
+        <div className="relative z-10">
+          <Hero />
+        </div>
+      </div>
 
       {/* ── SECTION 2: Latest GTA VI News ───────────────────────── */}
       <section
         id="latest-news-section"
-        className="max-w-7xl mx-auto px-4 sm:px-6"
+        className="max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24"
       >
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
           <div>
@@ -173,7 +212,7 @@ export const HomePage: React.FC = () => {
       {/* ── SECTION 3: Social / X Updates ───────────────────────── */}
       <section
         id="social-updates-section"
-        className="max-w-7xl mx-auto px-4 sm:px-6"
+        className="max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24"
       >
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
           <div>
@@ -232,7 +271,7 @@ export const HomePage: React.FC = () => {
       {/* ── SECTION 4: Guides ──────────────────────────────────── */}
       <section
         id="guides-section"
-        className="max-w-7xl mx-auto px-4 sm:px-6"
+        className="max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24"
       >
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
           <div>
@@ -294,7 +333,7 @@ export const HomePage: React.FC = () => {
       {/* ── SECTION 5: Tools ───────────────────────────────────── */}
       <section
         id="tools"
-        className="max-w-7xl mx-auto px-4 sm:px-6 scroll-mt-20"
+        className="max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 scroll-mt-20"
       >
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
           <div>
@@ -348,7 +387,7 @@ export const HomePage: React.FC = () => {
       {/* ── SECTION 6: Custom Placeholder Section ──────────────── */}
       <section
         id="custom-placeholder-section"
-        className="max-w-7xl mx-auto px-4 sm:px-6 scroll-mt-20"
+        className="max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 scroll-mt-20"
       >
       </section>
     </div>

@@ -93,22 +93,25 @@ export default function Waitlist() {
     };
   }, []);
 
-  const handleGoogleLogin = async () => {
-    setError("");
+const handleGoogleLogin = async () => {
+  setError("");
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/waitlist`,
-      },
-    });
+  // Remember that this login was started from the waitlist page
+  sessionStorage.setItem("waitlist_login", "true");
 
-    if (error) {
-      console.error(error);
-      setError("Could not start Google login.");
-    }
-  };
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/waitlist`,
+    },
+  });
 
+  if (error) {
+    sessionStorage.removeItem("waitlist_login");
+    console.error(error);
+    setError("Could not start Google login.");
+  }
+};
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement>
   ) => {
