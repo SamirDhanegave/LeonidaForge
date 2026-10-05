@@ -210,7 +210,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* ── SECTION 3: Social / X Updates ───────────────────────── */}
-      <section
+      {/* <section
         id="social-updates-section"
         className="max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24"
       >
@@ -266,7 +266,7 @@ export const HomePage: React.FC = () => {
               ))}
             </div>
           )}
-      </section>
+      </section> */}
 
       {/* ── SECTION 4: Guides ──────────────────────────────────── */}
       <section
