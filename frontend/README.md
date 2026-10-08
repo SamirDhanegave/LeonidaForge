@@ -48,7 +48,7 @@ Leonida Forge is a fast, responsive, zero-account web companion designed for Gra
 ### 🗺️ Locations & POI Explorer
 - District guides for Vice City, Port Gellhorn, Ambrosia, Leonard County, and the Keys.
 - Key points of interest, vehicle spawn zones, and points of interest overview.
-
+  
 ### 📚 SEO-Optimized Gameplay Guides
 - Tactical strategy articles targeting high-intent player queries (Fastest Car, Money Making, 100% Completion Roadmap, Bike Hierarchy).
 - Interactive accordions with dynamic Schema.org `FAQPage` microdata for rich search snippets.
